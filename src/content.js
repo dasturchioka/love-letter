@@ -1,8 +1,10 @@
-// Put final files in public/media and set their URLs here before deployment.
+import musicUrl from '../music.mp3?url';
+
+// Optional images can be placed in public/media and configured below.
 export const content = {
   title: 'What I want to say…',
   senderCredit: 'From Terrorist',
-  musicSrc: '',
+  musicSrc: musicUrl,
   imageSrc: '',
   imageAlt: '',
   message: [

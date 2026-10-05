@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Send } from 'lucide-react';
 import { content } from './content.js';
+import { MOTION_SPEED } from './motion.js';
 
 function FadeText({ text, delay = 0, stagger = 22, maxStagger = 1400, display = false, start = true, onComplete }) {
   const [finished, setFinished] = useState(false);
@@ -9,7 +10,7 @@ function FadeText({ text, delay = 0, stagger = 22, maxStagger = 1400, display = 
   const letterCount = Array.from(text.replace(/\s/g, '')).length;
   const step = Math.min(stagger, maxStagger / Math.max(1, letterCount - 1));
   const tokens = text.split(/(\n|[^\S\n]+)/);
-  const fadeDuration = display ? 550 : 450;
+  const fadeDuration = (display ? 550 : 450) * MOTION_SPEED;
   let lastWordIndex = -1;
   let letterIndex = 0;
   tokens.forEach((word, index) => { if (/\S/.test(word)) lastWordIndex = index; });
@@ -44,10 +45,12 @@ function FadeText({ text, delay = 0, stagger = 22, maxStagger = 1400, display = 
           if (word === '\n') return <br key={wordIndex} />;
           if (/^\s*$/.test(word)) return word;
           const length = Array.from(word).length;
-          const wordDelay = delay + letterIndex * step;
-          const wordDuration = Math.max(1, length * step);
+          const wordDelay = (delay + letterIndex * step) * MOTION_SPEED;
+          const wordDuration = Math.max(1, length * step) * MOTION_SPEED;
           letterIndex += length;
-          const completionAnimation = wordDuration > fadeDuration ? 'ink-word-type' : display ? 'ink-word-focus' : 'ink-word-fade';
+          const completionAnimation = display
+            ? (wordDuration > fadeDuration ? 'ink-word-type' : 'ink-word-focus')
+            : 'ink-word-fade';
           return (
             <span
               className="typing-word"
@@ -176,7 +179,7 @@ export default function App() {
 
   const playMusic = async () => {
     if (!audioSrc || !audioRef.current) return;
-    audioRef.current.volume = 0.4;
+    audioRef.current.volume = 1;
     try {
       await audioRef.current.play();
       setAudioNotice('');
@@ -215,7 +218,7 @@ export default function App() {
     const exit = panelRef.current.animate([
       { opacity: 1, filter: 'blur(0px)', transform: 'translateY(0)' },
       { opacity: 0, filter: 'blur(3px)', transform: 'translateY(-8px)' },
-    ], { duration: 180, easing: 'ease-in', fill: 'forwards' });
+    ], { duration: 180 * MOTION_SPEED, easing: 'ease-in', fill: 'forwards' });
     exitAnimationRef.current = exit;
     void exit.finished.catch(() => {}).then(() => {
       if (transitionSequenceRef.current === sequence) setStage(nextStage);
