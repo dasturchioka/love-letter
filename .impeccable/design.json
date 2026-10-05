@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-04T15:50:06Z",
+  "title": "Design System: What I want to say…",
+  "extensions": {
+    "colorMeta": {
+      "room": { "role": "primary", "displayName": "Rose room" },
+      "ink": { "role": "neutral", "displayName": "Warm plum ink" },
+      "paper": { "role": "neutral", "displayName": "Pale blush paper" },
+      "muted-ink": { "role": "neutral", "displayName": "Soft prose ink" },
+      "room-ink": { "role": "neutral", "displayName": "Room ink" },
+      "focus": { "role": "neutral", "displayName": "Pale focus" },
+      "display-ink": { "role": "secondary", "displayName": "Berry lettering" },
+      "accent": { "role": "secondary", "displayName": "Rose signature" },
+      "action": { "role": "primary", "displayName": "Telegram reply" },
+      "action-hover": { "role": "primary", "displayName": "Hovered reply" },
+      "action-active": { "role": "primary", "displayName": "Pressed reply" },
+      "rule": { "role": "neutral", "displayName": "Paper divider" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Flowing title", "purpose": "Allura400, title-only opening." },
+      "display-mobile": { "displayName": "Mobile flowing title", "purpose": "Responsive Allura lettering." },
+      "developed-display": { "displayName": "Letter heading", "purpose": "Allura heading with one-shot word-mask reveal." },
+      "body": { "displayName": "Letter prose", "purpose": "Alegreya400, readable English paragraphs." },
+      "body-mobile": { "displayName": "Mobile prose", "purpose": "18px Alegreya reading." },
+      "closing": { "displayName": "Italic closing", "purpose": "Alegreya400italic, final supplied paragraph." },
+      "signature": { "displayName": "Sender credit", "purpose": "Large Allura400 signature with a right-side heart." },
+      "label": { "displayName": "Reply label", "purpose": "Figtree600, concise primary action." }
+    },
+    "shadows": [
+      { "name": "print-lift", "value": "6px 18px 44px #4a243038", "purpose": "Soft physical paper lift." }
+    ],
+    "motion": [
+      { "name": "word-reveal", "value": "450ms", "purpose": "Stepped mask and opacity; completed runs remove their animation class." },
+      { "name": "display-focus", "value": "550ms", "purpose": "2px blur-to-focus on connected display words." },
+      { "name": "paragraph-stagger", "value": "2400ms", "purpose": "Maximum stagger per paragraph; next paragraph starts on actual completion." },
+      { "name": "paper-arrival", "value": "850ms", "purpose": "One entrance, no ongoing paper motion." },
+      { "name": "letter-continuity", "value": "600ms", "purpose": "Shared opening-to-letter scene; no third state." },
+      { "name": "sticker-drift", "value": "6000ms–9000ms", "purpose": "Independent corner drift, paused offscreen/hidden." },
+      { "name": "signature-float", "value": "5800ms", "purpose": "Centered, layout-anchored credit float." },
+      { "name": "signature-heart", "value": "4800ms", "purpose": "Right-side fingerprint heart float." },
+      { "name": "reduced-motion", "value": "0ms", "purpose": "Completed text, immediate stages and static decoration." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "600px" },
+      { "name": "narrow", "value": "359px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Title opening control",
+      "kind": "custom",
+      "refersTo": "opening-title",
+      "description": "Only the large title is visible; React owns the opening gesture.",
+      "html": "<h1 class=\"ds-title\"><button type=\"button\" aria-label=\"What I want to say… — open the letter\">What I want to say…</button></h1>",
+      "css": ".ds-title { max-width:9ch; margin:auto; color:#763b54; font:400 clamp(72px,7.5vw,96px)/1.16 'Allura',cursive; letter-spacing:-.015em; text-align:center; text-wrap:balance; } .ds-title button { width:100%; border:0; padding:20px 0; background:transparent; color:inherit; font:inherit; cursor:pointer; text-wrap:balance; } @media(max-width:600px){ .ds-title { font-size:clamp(58px,17.5vw,82px); } }"
+    },
+    {
+      "name": "Telegram reply",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "External HTTPS reply action after the supplied paragraphs.",
+      "html": "<a class=\"ds-reply\" href=\"https://t.me/xusainov055\" target=\"_blank\" rel=\"noopener noreferrer\">Write your answer...</a>",
+      "css": ".ds-reply { display:inline-flex; align-items:center; justify-content:center; min-height:56px; min-width:246px; padding:17px 25px; border-radius:6px; background:#73394f; color:#fff7ef; font:600 16px 'Figtree',sans-serif; text-decoration:none; } .ds-reply:hover { background:#562538; } .ds-reply:active { background:#431b2b; } @media(max-width:600px){ .ds-reply { min-width:0; width:100%; max-width:286px; padding-inline:18px; } }"
+    },
+    {
+      "name": "Sender credit",
+      "kind": "custom",
+      "refersTo": "signature",
+      "description": "Centered flowing credit and fingerprint-heart sticker in normal layout.",
+      "html": "<p class=\"ds-credit\">From Terrorist <img src=\"/stickers/fingerprint-heart.webp\" alt=\"\"/></p>",
+      "css": ".ds-credit { display:flex; align-items:center; justify-content:center; gap:12px; width:100%; margin:58px auto 0; color:#975a6e; font:400 clamp(70px,14vw,92px)/1.2 'Allura',cursive; letter-spacing:.01em; } .ds-credit img { width:42px; flex:0 0 42px; height:auto; } @media(max-width:600px){ .ds-credit { gap:10px; } .ds-credit img { width:36px; flex-basis:36px; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "A sincere letter on a rose-toned photographic print",
+    "overview": "Rose surroundings and pale real paper carry berry Allura lettering, Alegreya English prose and a single Figtree Telegram reply action. Supplied stickers float at the edges; paragraphs reveal in sequence.",
+    "keyCharacteristics": ["Real photographic paper and supplied stickers.", "Flowing lettering paired with readable serif prose.", "One optional reply action after a two-state letter."],
+    "rules": [
+      { "name": "Readable expression", "body": "Allura carries expression, Alegreya prose, and Figtree controls; keep whole-word shaping during reveals.", "section": "typography" },
+      { "name": "Material truth", "body": "Retain scanned fiber/edge assets and their provenance; use the current paper-color blend without stretching the grain.", "section": "shapes" },
+      { "name": "One-shot reading", "body": "Completed text stops animating; actual paragraph completion advances the sequence.", "section": "motion" }
+    ],
+    "dos": ["Preserve the exact English copy.", "Anchor mobile stickers near the print.", "Keep reply navigation optional and direct."],
+    "donts": ["Do not reintroduce yes/no controls or a third state.", "Do not replay completed text or loop paper displacement.", "Do not add small opening copy or music controls."]
+  }
+}
