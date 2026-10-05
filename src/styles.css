@@ -21,6 +21,7 @@
   --font-display: 'Allura', cursive;
   --font-reading: 'Alegreya', Georgia, serif;
   --font-label: 'Figtree', sans-serif;
+  --typing-color: var(--ink);
 }
 
 * { box-sizing: border-box; }
@@ -55,7 +56,7 @@ html { scrollbar-color: var(--action) var(--room); scrollbar-width: thin; }
   background: var(--room);
   overflow-x: clip;
 }
-.audio-notice { color: var(--room-ink); text-align: center; font: 400 14px/1.5 var(--font-label); }
+.audio-notice { color: var(--room-ink); --typing-color: var(--room-ink); text-align: center; font: 400 14px/1.5 var(--font-label); }
 .room-main { position: relative; max-width: 1050px; margin: 55px auto 0; }
 .letter-scene { position: relative; max-width: 640px; margin-inline: auto; isolation: isolate; view-transition-name: love-letter; }
 .sticker-layer { position: absolute; inset: 0; z-index: 2; pointer-events: none; user-select: none; }
@@ -97,37 +98,31 @@ html { scrollbar-color: var(--action) var(--room); scrollbar-width: thin; }
   animation: paper-arrive calc(850ms * var(--motion-speed, 1)) var(--motion-ease) both;
 }
 .stage-panel { animation: panel-arrive calc(650ms * var(--motion-speed, 1)) var(--motion-ease) both; }
-.fade-typing { position: relative; }
-.typing-word { display: inline-block; white-space: nowrap; }
-.fade-typing.is-pending .typing-word { opacity: 0; }
-.fade-typing.is-typing .typing-word {
-  clip-path: none;
-  animation: ink-word-fade calc(450ms * var(--motion-speed, 1)) ease-out var(--word-delay) both;
-}
-.display-typing.is-typing .typing-word {
-  animation: ink-word-type var(--word-duration) steps(var(--word-steps), end) var(--word-delay) both,
-    ink-word-focus calc(550ms * var(--motion-speed, 1)) ease-out var(--word-delay) both;
-}
-.fade-typing.is-complete .typing-word { opacity: 1; filter: none; clip-path: none; }
+.fade-typing { position: relative; white-space: pre-line; }
+.typing-text { display: inline; overflow: visible; }
+.typing-token { display: inline; overflow: visible; }
+.typing-token.is-hidden { visibility: hidden; }
+.typing-token.is-revealing { animation: ink-token-fade calc(650ms * var(--motion-speed, 1)) ease-out both; }
+.typing-token.is-settled { color: inherit; }
 .intro-content { min-height: 510px; display: grid; place-items: center; text-align: center; }
-.intro-title { max-width: 9ch; font: 400 clamp(72px, 7.5vw, 96px)/1.16 var(--font-display); letter-spacing: -0.015em; color: var(--display-ink); margin: 0; text-wrap: balance; }
+.intro-title { max-width: 9ch; font: 400 clamp(72px, 7.5vw, 96px)/1.16 var(--font-display); letter-spacing: -0.015em; color: var(--display-ink); --typing-color: var(--display-ink); margin: 0; text-wrap: balance; }
 .title-open { display: block; width: 100%; border: 0; padding: 20px 0; background: transparent; color: inherit; font: inherit; letter-spacing: inherit; text-wrap: balance; border-radius: 8px; transition: color calc(220ms * var(--motion-speed, 1)) ease, transform calc(350ms * var(--motion-speed, 1)) var(--motion-ease); }
-.title-open:hover { color: var(--action-hover); }
+.title-open:hover { color: var(--action-hover); --typing-color: var(--action-hover); }
 .title-open:active { transform: scale(0.98); }
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 56px; border: 0; padding: 17px 25px; border-radius: 6px; font-family: var(--font-label); font-size: 16px; font-weight: 600; text-decoration: none; transition: transform calc(220ms * var(--motion-speed, 1)) var(--motion-ease), background-color calc(180ms * var(--motion-speed, 1)) ease, color calc(180ms * var(--motion-speed, 1)) ease; }
 .button svg { transition: transform calc(250ms * var(--motion-speed, 1)) var(--motion-ease); }
-.answer-button { min-width: 246px; background: var(--action); color: var(--focus); }
+.answer-button { min-width: 246px; background: var(--action); color: var(--focus); --typing-color: var(--focus); }
 .answer-button:hover { background: var(--action-hover); }
 .answer-button:hover svg { transform: translate(3px, -3px); }
 .answer-button:active { background: var(--action-active); transform: translateY(1px) scale(0.98); }
 .developing-title { margin: 5px -8px 34px; }
-.developing-title h1 { font: 400 clamp(50px, 13.6vw, 76px)/1.16 var(--font-display); text-align: center; letter-spacing: -0.015em; color: var(--display-ink); margin: 0; text-wrap: balance; }
-.letter-body { font-family: var(--font-reading); font-size: 20px; line-height: 1.7; letter-spacing: 0.005em; color: var(--muted-ink); }
+.developing-title h1 { font: 400 clamp(50px, 13.6vw, 76px)/1.16 var(--font-display); text-align: center; letter-spacing: -0.015em; color: var(--display-ink); --typing-color: var(--display-ink); margin: 0; text-wrap: balance; }
+.letter-body { font-family: var(--font-reading); font-size: 20px; line-height: 1.7; letter-spacing: 0.005em; color: var(--muted-ink); --typing-color: var(--muted-ink); }
 .letter-body p { margin: 0 0 26px; }
-.letter-body p:first-child { color: var(--ink); }
-.letter-body p:last-child { margin-bottom: 0; font-size: 22px; font-style: italic; line-height: 1.6; color: var(--display-ink); }
+.letter-body p:first-child { color: var(--ink); --typing-color: var(--ink); }
+.letter-body p:last-child { margin-bottom: 0; font-size: 22px; font-style: italic; line-height: 1.6; color: var(--display-ink); --typing-color: var(--display-ink); }
 .reply-section { margin-top: 38px; padding-top: 32px; border-top: 1px solid var(--rule); text-align: center; opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity calc(450ms * var(--motion-speed, 1)) ease, transform calc(550ms * var(--motion-speed, 1)) var(--motion-ease); }
-.reply-section.is-revealed { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.reply-section.is-revealed { opacity: 1; transform: none; pointer-events: auto; }
 .personal-photo { margin: 0 0 24px; }
 .personal-photo img { display: block; width: 100%; max-height: 340px; object-fit: contain; background: #e4cbd1; animation: photo-develop calc(900ms * var(--motion-speed, 1)) var(--motion-ease) both; }
 .sender-credit {
@@ -140,6 +135,7 @@ html { scrollbar-color: var(--action) var(--room); scrollbar-width: thin; }
   margin: 58px auto 0;
   text-align: center;
   color: var(--accent);
+  --typing-color: var(--accent);
   font: 400 clamp(70px, 14vw, 92px)/1.2 var(--font-display);
   letter-spacing: 0.01em;
   transform-origin: center;
@@ -157,25 +153,17 @@ html { scrollbar-color: var(--action) var(--room); scrollbar-width: thin; }
   .title-open:hover { transform: translateY(-3px); }
 }
 
-@keyframes ink-word-type {
-  from { clip-path: inset(-0.25em 100% -0.25em -0.06em); }
-  to { clip-path: inset(-0.25em -0.14em -0.25em -0.06em); }
-}
-@keyframes ink-word-fade {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes ink-word-focus {
-  from { opacity: 0; filter: blur(2px); }
-  to { opacity: 1; filter: blur(0); }
+@keyframes ink-token-fade {
+  from { color: transparent; }
+  to { color: var(--typing-color); }
 }
 @keyframes paper-arrive {
   from { opacity: 0.35; transform: translateY(22px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 1; transform: none; }
 }
 @keyframes panel-arrive {
   from { opacity: 0.3; filter: blur(3px); transform: translateY(10px); }
-  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+  to { opacity: 1; filter: none; transform: none; }
 }
 @keyframes sticker-arrive {
   from { opacity: 0; transform: scale(0.85); }
@@ -250,7 +238,7 @@ html { scrollbar-color: var(--action) var(--room); scrollbar-width: thin; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
-  .typing-word, .stage-panel, .print, .floating-sticker, .personal-photo img { opacity: 1 !important; filter: none !important; transform: none !important; clip-path: none !important; }
+  .typing-text, .stage-panel, .print, .floating-sticker, .personal-photo img { opacity: 1 !important; filter: none !important; transform: none !important; clip-path: none !important; }
   .sticker-motion { transform: rotate(var(--tilt)); }
   ::view-transition-group(love-letter), ::view-transition-old(love-letter), ::view-transition-new(love-letter) { animation: none !important; }
 }

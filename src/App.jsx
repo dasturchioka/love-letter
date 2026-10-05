@@ -5,62 +5,105 @@ import { content } from './content.js';
 import { MOTION_SPEED } from './motion.js';
 
 function FadeText({ text, delay = 0, stagger = 22, maxStagger = 1400, display = false, start = true, onComplete }) {
+  const textRef = useRef(null);
+  const callbackRef = useRef(onComplete);
+  const finishRef = useRef(null);
+  const [visibleLength, setVisibleLength] = useState(0);
+  const [settledWords, setSettledWords] = useState(() => new Set());
+  const [running, setRunning] = useState(false);
   const [finished, setFinished] = useState(false);
   const completedRef = useRef(false);
-  const letterCount = Array.from(text.replace(/\s/g, '')).length;
-  const step = Math.min(stagger, maxStagger / Math.max(1, letterCount - 1));
-  const tokens = text.split(/(\n|[^\S\n]+)/);
-  const fadeDuration = (display ? 550 : 450) * MOTION_SPEED;
-  let lastWordIndex = -1;
-  let letterIndex = 0;
-  tokens.forEach((word, index) => { if (/\S/.test(word)) lastWordIndex = index; });
+
+  useEffect(() => { callbackRef.current = onComplete; }, [onComplete]);
 
   useEffect(() => {
     if (!start || completedRef.current) return;
+    let cancelled = false;
+    let timer;
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const finishWithoutMotion = () => {
-      if ((preference.matches || lastWordIndex === -1) && !completedRef.current) {
-        completedRef.current = true;
-        setFinished(true);
-        onComplete?.();
-      }
-    };
-    finishWithoutMotion();
-    preference.addEventListener('change', finishWithoutMotion);
-    return () => preference.removeEventListener('change', finishWithoutMotion);
-  }, [start, onComplete, lastWordIndex, finished]);
 
-  const complete = () => {
-    if (completedRef.current) return;
-    completedRef.current = true;
-    setFinished(true);
-    onComplete?.();
-  };
+    const complete = () => {
+      if (cancelled || completedRef.current) return;
+      clearTimeout(timer);
+      completedRef.current = true;
+      setVisibleLength(text.length);
+      setFinished(true);
+      callbackRef.current?.();
+    };
+    const finishWithoutMotion = () => {
+      if (preference.matches) complete();
+    };
+    finishRef.current = complete;
+    preference.addEventListener('change', finishWithoutMotion);
+
+    const begin = async () => {
+      if (preference.matches || !text.trim()) {
+        complete();
+        return;
+      }
+
+      // Load the actual face before typing, so fallback-font metrics cannot jump.
+      try {
+        if (document.fonts && textRef.current) {
+          const font = getComputedStyle(textRef.current);
+          await document.fonts.load(`${font.fontStyle} ${font.fontWeight} ${font.fontSize} ${font.fontFamily}`, text);
+          await document.fonts.ready;
+        }
+      } catch {
+        // A failed custom font still gets a complete, normally shaped fallback.
+      }
+      if (cancelled || completedRef.current) return;
+
+      const words = Array.from(text.matchAll(/\S+\s*/g));
+      const letterCount = Array.from(text.replace(/\s/g, '')).length;
+      const step = Math.min(stagger, maxStagger / Math.max(1, letterCount - 1));
+      let index = 0;
+
+      const revealWord = () => {
+        if (cancelled || completedRef.current) return;
+        const word = words[index];
+        setRunning(true);
+        setVisibleLength(word.index + word[0].length);
+        index += 1;
+
+        if (index < words.length) {
+          const length = Array.from(word[0].trim()).length;
+          timer = setTimeout(revealWord, Math.max(35, length * step * MOTION_SPEED));
+        }
+      };
+      timer = setTimeout(revealWord, delay * MOTION_SPEED);
+    };
+
+    void begin();
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      if (finishRef.current === complete) finishRef.current = null;
+      preference.removeEventListener('change', finishWithoutMotion);
+    };
+  }, [text, start, delay, stagger, maxStagger, display]);
+
+  const words = Array.from(text.matchAll(/\S+\s*/g));
 
   return (
-    <span className={`fade-typing${finished ? ' is-complete' : start ? ' is-typing' : ' is-pending'}${display ? ' display-typing' : ''}`}>
+    <span ref={textRef} className={`fade-typing${finished ? ' is-complete' : running ? ' is-typing' : ' is-pending'}${display ? ' display-typing' : ''}`}>
       <span className="sr-only">{text.replace(/\n/g, ' ')}</span>
-      <span aria-hidden="true">
-        {tokens.map((word, wordIndex) => {
-          if (word === '\n') return <br key={wordIndex} />;
-          if (/^\s*$/.test(word)) return word;
-          const length = Array.from(word).length;
-          const wordDelay = (delay + letterIndex * step) * MOTION_SPEED;
-          const wordDuration = Math.max(1, length * step) * MOTION_SPEED;
-          letterIndex += length;
-          const completionAnimation = display
-            ? (wordDuration > fadeDuration ? 'ink-word-type' : 'ink-word-focus')
-            : 'ink-word-fade';
+      <span className="typing-text" aria-hidden="true">
+        {text.slice(0, words[0]?.index ?? text.length)}
+        {words.map((word, index) => {
+          const revealed = finished || word.index + word[0].length <= visibleLength;
+          const settled = finished || settledWords.has(word.index);
           return (
             <span
-              className="typing-word"
-              key={wordIndex}
-              style={{ '--word-delay': `${wordDelay}ms`, '--word-duration': `${wordDuration}ms`, '--word-steps': length }}
-              onAnimationEnd={wordIndex === lastWordIndex ? (event) => {
-                if (event.target === event.currentTarget && event.animationName === completionAnimation) complete();
-              } : undefined}
+              key={word.index}
+              className={`typing-token ${!revealed ? 'is-hidden' : settled ? 'is-settled' : 'is-revealing'}`}
+              onAnimationEnd={(event) => {
+                if (event.target !== event.currentTarget || event.animationName !== 'ink-token-fade') return;
+                setSettledWords((current) => new Set(current).add(word.index));
+                if (index === words.length - 1) finishRef.current?.();
+              }}
             >
-              {word}
+              {word[0]}
             </span>
           );
         })}
@@ -69,12 +112,12 @@ function FadeText({ text, delay = 0, stagger = 22, maxStagger = 1400, display = 
   );
 }
 
-function LetterParagraphs({ onComplete }) {
+function LetterParagraphs({ onComplete, start = true }) {
   const [activeParagraph, setActiveParagraph] = useState(0);
 
   useEffect(() => {
-    if (!content.message.length) onComplete();
-  }, [onComplete]);
+    if (start && !content.message.length) onComplete();
+  }, [start, onComplete]);
 
   return (
     <div className="letter-body">
@@ -85,7 +128,7 @@ function LetterParagraphs({ onComplete }) {
             delay={100}
             stagger={12}
             maxStagger={2400}
-            start={index <= activeParagraph}
+            start={start && index <= activeParagraph}
             onComplete={() => {
               setActiveParagraph((current) => Math.max(current, index + 1));
               if (index === content.message.length - 1) onComplete();
@@ -97,8 +140,8 @@ function LetterParagraphs({ onComplete }) {
   );
 }
 
-function DevelopingTitle({ text }) {
-  return <div className="developing-title"><h1><FadeText text={text} delay={120} stagger={34} display /></h1></div>;
+function DevelopingTitle({ text, onComplete }) {
+  return <div className="developing-title"><h1><FadeText text={text} delay={120} stagger={34} display onComplete={onComplete} /></h1></div>;
 }
 
 const stickers = [
@@ -150,6 +193,7 @@ function FloatingStickers({ stage }) {
 
 export default function App() {
   const [stage, setStage] = useState('intro');
+  const [headingComplete, setHeadingComplete] = useState(false);
   const [letterComplete, setLetterComplete] = useState(false);
   const audioSrc = content.musicSrc;
   const [imageSrc, setImageSrc] = useState(content.imageSrc);
@@ -189,7 +233,10 @@ export default function App() {
   };
 
   const transitionTo = (nextStage) => {
-    if (nextStage === 'letter') setLetterComplete(false);
+    if (nextStage === 'letter') {
+      setHeadingComplete(false);
+      setLetterComplete(false);
+    }
     const sequence = ++transitionSequenceRef.current;
     viewTransitionRef.current?.skipTransition();
     exitAnimationRef.current?.cancel();
@@ -251,7 +298,7 @@ export default function App() {
 
               {stage === 'letter' && (
                 <div className="letter-content">
-                  <DevelopingTitle text={content.title} />
+                  <DevelopingTitle text={content.title} onComplete={() => setHeadingComplete(true)} />
                   {imageSrc && (
                     <figure className="personal-photo">
                       <img
@@ -261,7 +308,7 @@ export default function App() {
                       />
                     </figure>
                   )}
-                  <LetterParagraphs onComplete={() => setLetterComplete(true)} />
+                  <LetterParagraphs start={headingComplete} onComplete={() => setLetterComplete(true)} />
                   <div className={`reply-section${letterComplete ? ' is-revealed' : ''}`} inert={!letterComplete} aria-hidden={!letterComplete}>
                     <a className="button answer-button" href={content.replyUrl} target="_blank" rel="noopener noreferrer">
                       <FadeText text={content.replyLabel} delay={100} start={letterComplete} />
